@@ -13,4 +13,5 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 add_executable(CPPLearn src/main.cpp)
 
 # 链接库
-target_link_libraries(CPPLearn TcAdsDll)
+target_link_libraries(CPPLearn ${PROJECT_SOURCE_DIR}/lib/TcAdsDll.lib)
+#target_link_libraries(CPPLearn TcAdsDll)

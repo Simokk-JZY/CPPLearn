@@ -1,13 +1,8 @@
-#include <iostream>
-#include <windows.h>
-
-// ADS headers for TwinCAT 3
-#include "TcAdsDef.h"
-#include "TcAdsAPI.h"
+#include "stdafx.h"
 
 int main()
 {
-    long nErr, nPort;
+    long  nErr, nPort;
     AmsAddr Addr;
     PAmsAddr pAddr = &Addr;
     DWORD dwData;
@@ -16,7 +11,7 @@ int main()
     nPort = AdsPortOpen();
     nErr = AdsGetLocalAddress(pAddr);
     if (nErr) std::cerr << "Error: AdsGetLocalAddress: " << nErr << '\n';
-
+    std::cout << "AdsGetLocalAddress returned " << nErr << '\n';
     // TwinCAT 3 PLC1 = 851
     pAddr->port = 851;
 
@@ -33,4 +28,8 @@ int main()
     if (nErr) std::cerr << "Error: AdsPortClose: " << nErr << '\n';
 
     return 0;
+
+
+
+
 }
