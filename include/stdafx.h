@@ -12,5 +12,5 @@
 // ADS headers for TwinCAT 3
 #include "TcAdsDef.h" //结构体和常量的声明
 #include "TcAdsAPI.h" // ADS函数的声明
-
+#include "minwindef.h"
 #endif //CPPLEARN_STDAFX_H
