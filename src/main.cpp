@@ -30,6 +30,8 @@ int main() {
         std::cout << stateW1 << '\n';
         Sleep(50);
     }
+
+    //暂停程序执行
     while (keyinput) {
         char c=getchar();
         if (c == '\n') keyinput = 0;
