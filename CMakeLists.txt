@@ -10,7 +10,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 # 指定源文件路径
-add_executable(CPPLearn src/main.cpp)
+add_executable(CPPLearn src/main.cpp
+        src/scontrol.cpp)
 
 # 链接库
 target_link_libraries(CPPLearn ${PROJECT_SOURCE_DIR}/lib/TcAdsDll.lib)

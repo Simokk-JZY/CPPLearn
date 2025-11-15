@@ -14,4 +14,7 @@
 #include "TcAdsDef.h" //结构体和常量的声明
 #include "TcAdsAPI.h" // ADS函数的声明
 #include "minwindef.h"//使用简化声明
+#include "Scontrol.h"//伺服控制声明
+
+
 #endif //CPPLEARN_STDAFX_H
