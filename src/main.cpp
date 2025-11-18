@@ -7,10 +7,10 @@ int main() {
     Axis1.nportopen();//开启ADS通讯
 
     Axis1.modeset();//设置运动模式
-    // Axis1.Senable();//给电机上使能
+    Axis1.Senable();//给电机上使能
 
     Axis1.pp_parameterS();//设置pp模式的运动参数
-    Axis1.Senable();//给电机上使能
+    // Axis1.Senable();//给电机上使能
     Axis1.Sconfirm();//运行前确认状态
     Axis1.Sspin();//开始旋转
 

@@ -38,6 +38,14 @@ void Sctrl::Senable() {
     std::cout << "已完成上使能" << '\n';
 }
 void Sctrl::Sdisable() {
+    do {
+        Sleep(500);
+        nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );
+        if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
+        condition = (stateW1 & 1024) == 0;
+    }while(condition);
+    std::cout << "转动完成" << '\n';
+
     for (int i=2 ; i>-1 ; i-- )
     {
         // std::cin >> control1;
@@ -140,7 +148,6 @@ void Sctrl::Sspin() {
     nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );
     if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
     std::cout << std::bitset<16>(stateW1) << '\n';
-    std::cout << "退出转动" << '\n';
 }
 
 // void st0p() {
