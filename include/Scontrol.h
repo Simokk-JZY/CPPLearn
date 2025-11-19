@@ -17,17 +17,21 @@ private:
     unsigned char moo ;//运动模式状态
     unsigned short control1[4] = {0,6,7,15} , ctrl2 = 31 ;//控制字输入值
     unsigned char mode1 = 1;//pp模式输入值
-    int pos1 = 0, pos2 = 0, pos3 = 30000;//闲值
+    int pos1 = 0;//闲值
     UINT v1=10000 , a1=10000 , a2 = 10000 , max_vm = 50000 ;//加速度，速度值
     bool condition;
 
+
 public:
-    void nportopen();
-    void nportclose();
-    void Senable();
-    void Sdisable();
-    void modeset();
-    void pp_parameterS();
+    Sctrl();
+    ~Sctrl();
+    // void nportopen();
+    // void nportclose();
+    void enable();
+    void disable();
+    // void modeset();
+    // void pp_parameterS();
+    void motion_pp(int);
     void Sspin();
     void Sconfirm();
 };

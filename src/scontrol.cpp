@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 
-void Sctrl::nportopen() {
+Sctrl::Sctrl() {
     nPort = AdsPortOpen();
     nErr = AdsGetLocalAddress(pAddr);
     if (nErr) std::cerr << "Error: AdsGetLocalAddress: " << nErr << '\n';
@@ -12,15 +12,42 @@ void Sctrl::nportopen() {
     // TwinCAT 3 PLC1 = 851
     pAddr->port = 851;
     std::cout << "端口已连接" << '\n';
+    nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E806,0x1, &mode1 );
+    if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
+    Sleep(50);
+    nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );
+    if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
+    std::cout << std::bitset<16>(stateW1) << '\n';
+    Sleep(50);
+    std::cout << "默认动作模式为pp模式" << '\n';
 }
 
-void Sctrl::nportclose() {
+Sctrl::~Sctrl() {
     nErr = AdsPortClose();
     if (nErr) std::cerr << "Error: AdsPortClose: " << nErr << '\n';
     std::cout << "端口已关闭" << '\n';
 }
 
-void Sctrl::Senable() {
+
+
+// void Sctrl::nportopen() {
+//     nPort = AdsPortOpen();
+//     nErr = AdsGetLocalAddress(pAddr);
+//     if (nErr) std::cerr << "Error: AdsGetLocalAddress: " << nErr << '\n';
+//     std::cout << "AdsGetLocalAddress returned " << nErr << '\n';
+//     // TwinCAT 3 PLC1 = 851
+//     pAddr->port = 851;
+//     std::cout << "端口已连接" << '\n';
+// }
+
+// void Sctrl::nportclose() {
+//     nErr = AdsPortClose();
+//     if (nErr) std::cerr << "Error: AdsPortClose: " << nErr << '\n';
+//     std::cout << "端口已关闭" << '\n';
+// }
+
+
+void Sctrl::enable() {
     for (int i=1 ;i < 4; i++ )
     {
         // std::cin >> control1;
@@ -37,7 +64,7 @@ void Sctrl::Senable() {
     }
     std::cout << "已完成上使能" << '\n';
 }
-void Sctrl::Sdisable() {
+void Sctrl::disable() {
     do {
         Sleep(500);
         nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );
@@ -60,7 +87,8 @@ void Sctrl::Sdisable() {
     std::cout << "使能结束" << '\n';
 }
 
-void Sctrl::modeset() {
+void Sctrl::motion_pp(int target_pos) {
+    pos1 = target_pos;
     nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E806,0x1, &mode1 );
     if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
     Sleep(50);
@@ -69,9 +97,9 @@ void Sctrl::modeset() {
     std::cout << std::bitset<16>(stateW1) << '\n';
     Sleep(50);
     std::cout << "设置为pp模式" << '\n';
-}
-void Sctrl::pp_parameterS() {
-    //设置点动位置
+// }
+// void Sctrl::pp_parameterS() {
+//     //设置点动位置
     nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E808,0x4, &pos1 );
     if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
     Sleep(50);
