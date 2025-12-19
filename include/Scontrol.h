@@ -25,18 +25,14 @@ private:
 public:
     Sctrl();
     ~Sctrl();
-    // void nportopen();
-    // void nportclose();
+
     void enable();
     void disable();
-    // void modeset();
-    // void pp_parameterS();
+
     void motion_pp(int);
     void Sspin();
     void Sconfirm();
 };
 
-// inline int kbinput = 1;
-// void st0p();
 
 #endif //CPPLEARN_SCONTROL_H
