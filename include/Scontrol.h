@@ -14,7 +14,7 @@ private:
     AmsAddr Addr;
     PAmsAddr pAddr = &Addr;//指针
     unsigned short stateW1;//状态字读取值
-    unsigned char moo ;//运动模式状态
+    // unsigned char moo ;//运动模式状态
     unsigned short control1[4] = {0,6,7,15} , ctrl2 = 31 ;//控制字输入值
     unsigned char mode1 = 1;//pp模式输入值
     int pos1 = 0;//闲值
@@ -32,6 +32,7 @@ public:
     void motion_pp(int);
     void Sspin();
     void Sconfirm();
+    void transmit();
 };
 
 

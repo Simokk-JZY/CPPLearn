@@ -14,7 +14,9 @@ void threadaxis() {
 
 int main() {
 
-    std::thread t1(&threadaxis);
+    // std::thread t1(threadaxis);
+    // t1.detach();
+
 
 
 
