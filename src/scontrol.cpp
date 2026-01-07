@@ -5,14 +5,22 @@
 #include "stdafx.h"
 
 Sctrl::Sctrl() {
-    nPort = AdsPortOpen();
-    nErr = AdsGetLocalAddress(pAddr);//自动获取本地地址
-    if (nErr) std::cerr << "Error: AdsGetLocalAddress: " << nErr << '\n';
-    std::cout << "AdsGetLocalAddress returned " << nErr << '\n';
 
-    // TwinCAT 3 PLC1 = 851
-    pAddr->port = 851;
-    std::cout << "端口已连接" << '\n';
+
+
+
+    //电机上使能
+    for (int i=1 ;i < 4; i++ )
+    {
+        //将数值写入寄存器
+        ctrl = control[i];
+        Sleep(10);
+
+        //从寄存器读取数值
+        std::cout << std::bitset<16>(stateW) << '\n';
+        Sleep(50);
+    }
+    std::cout << "已完成上使能" << '\n';
 
     // nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E806,0x1, &mode1 );
     // if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
@@ -25,24 +33,36 @@ Sctrl::Sctrl() {
 }
 
 Sctrl::~Sctrl() {
+
+}
+
+void Sctrl::ADS() {
+    nPort = AdsPortOpen();
+    nErr = AdsGetLocalAddress(pAddr);//自动获取本地地址
+    if (nErr) std::cerr << "Error: AdsGetLocalAddress: " << nErr << '\n';
+    std::cout << "AdsGetLocalAddress returned " << nErr << '\n';
+
+    // TwinCAT 3 PLC1 = 851
+    pAddr->port = 851;
+    std::cout << "端口已连接" << '\n';
+}
+
+void Sctrl::ADSoff() {
     nErr = AdsPortClose();
     if (nErr) std::cerr << "Error: AdsPortClose: " << nErr << '\n';
     std::cout << "端口已关闭" << '\n';
 }
 
+
 void Sctrl::enable() {
     for (int i=1 ;i < 4; i++ )
     {
-        // std::cin >> control1;
-        // 将数值写入寄存器
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E800,0x2, &(control1[i]) );
-        if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        // std::cout << "Error: AdsSyncWriteReq: " << nErr << '\n'；
-        Sleep(100);
+        //将数值写入寄存器
+        ctrl = control[i];
+        Sleep(10);
+
         //从寄存器读取数值
-        nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );
-        if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
-        std::cout << std::bitset<16>(stateW1) << '\n';
+        std::cout << std::bitset<16>(stateW) << '\n';
         Sleep(50);
     }
     std::cout << "已完成上使能" << '\n';
@@ -132,7 +152,7 @@ void Sctrl::motion_pp(int target_pos) {
 }
 
 void Sctrl::Sconfirm() {
-    nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E800,0x2, &control1[3] );
+    nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E800,0x2, &control1[3] );//写入15
     if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
     Sleep(50);
     nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );
@@ -142,7 +162,7 @@ void Sctrl::Sconfirm() {
 }
 
 void Sctrl::Sspin() {
-    nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E800,0x2, &ctrl2 );
+    nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E800,0x2, &ctrl2 );//写入31
     if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
     Sleep(50);
     nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );
@@ -161,43 +181,26 @@ void Sctrl::Sspin() {
 
 void Sctrl::transmit() {
     while (true) {
+
+
         //写入参数
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入控制字1
+        nErr = AdsSyncWriteReq(pAddr,0xF030,c_offset,0x2, &ctrl );//写入控制字
         if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入控制字2
+        nErr = AdsSyncWriteReq(pAddr,0xF030,m_offset,0x1, &mode );//写入运动模式
         if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入运动模式1
+        nErr = AdsSyncWriteReq(pAddr,0xF030,mv_offset,0x4, &max_v );//写入最大速度
         if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入运动模式2
+        nErr = AdsSyncWriteReq(pAddr,0xF030,v_offset,0x4, &v );//写入速度
         if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入最大速度1
-        if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入最大速度2
-        if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入速度1
-        if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入速度2
-        if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入目标位置1
-        if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-        nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E82C,0x4, &a1 );//写入目标位置2
+        nErr = AdsSyncWriteReq(pAddr,0xF030,p_offset,0x4, &pos );//写入目标位置
         if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 
-
-
-
-
-
-
         //读取状态
-        nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );//读取状态字1
+        nErr = AdsSyncReadReq(pAddr,0xF020,s_offset,0x2, &stateW );//读取状态字
         if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
-        std::cout << std::bitset<16>(stateW1) << '\n';
-        nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW1 );//读取状态字2
-        if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
-        std::cout << std::bitset<16>(stateW1) << '\n';
+        std::cout << std::bitset<16>(stateW) << '\n';
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     }
