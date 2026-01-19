@@ -50,6 +50,8 @@ public:
     static void ADSoff();
 
     Sctrl(const );
+    Sctrl();
+
     ~Sctrl();
 
     void enable();
