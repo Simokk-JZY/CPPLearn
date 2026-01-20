@@ -13,9 +13,10 @@
 // ADS headers for TwinCAT 3
 #include "TcAdsDef.h" //结构体和常量的声明
 #include "TcAdsAPI.h" // ADS函数的声明
-#include "minwindef.h"//使用简化声明
+#include <minwindef.h>//使用简化声明
 #include "Scontrol.h"//伺服控制声明
-#include "thread"//多线程声明
+#include <thread>//多线程声明
+#include <cstdint>
 
 
 #endif //CPPLEARN_STDAFX_H

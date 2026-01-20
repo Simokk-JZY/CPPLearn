@@ -13,7 +13,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(CPPLearn src/main.cpp
                         src/scontrol.cpp)
 
-add_executable(demo src/demo_1.cpp)
+add_executable(demo demos/demo_1.cpp)
 # 链接库
 target_link_libraries(CPPLearn ${PROJECT_SOURCE_DIR}/lib/TcAdsDll.lib)
 target_link_libraries(demo ${PROJECT_SOURCE_DIR}/lib/TcAdsDll.lib)

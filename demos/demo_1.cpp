@@ -4,34 +4,30 @@
 
 #include "stdafx.h"
 
-struct ads {
-    unsigned short control1;
-    unsigned char mode1;
-    int32_t position1;
-    unsigned int velocity1;
-    unsigned int max_speed1;
-    unsigned short control2;
-    unsigned char mode2;
-    int32_t position2;
-    unsigned int velocity2;
-    unsigned int max_speed2;
-};
+struct Ads {
+    unsigned short control;
+    unsigned char mode;
+    int32_t position;
+    unsigned int velocity;
+    unsigned int max_speed;
+}axis1[2];
+
+struct Ads2 {
+    unsigned short stateW;
+}axis2[2];
 
 int main()
 {
-    ads axis1;
-    axis1.control1 = 1;
-    axis1.mode1 = 2;
-    axis1.position1 = 3;
-    axis1.velocity1 = 4;
-    axis1.max_speed1 = 5;
-    axis1.control2 = 1;
-    axis1.mode2 = 2;
-    axis1.position2 = 3;
-    axis1.velocity2 = 4;
-    axis1.max_speed2 = 5;
+    // Ads axis1;
+    axis1[0]={1,2,3,4,5};
+    axis1[1]={8,4,7,8,9};
+
+    // axis2[0]={13};
+
 
     std::cout << sizeof(axis1) << "\n";
+    std::cout << sizeof(axis2) << "\n";
+    std::cout << axis2[0].stateW <<'\n'<< axis2[1].stateW <<'\n';
     std::cin.get();
 
     long  nErr{}, nPort{};
@@ -47,9 +43,11 @@ int main()
     pAddr->port = 851;
     std::cout << "端口已连接" << '\n';
 
-    nErr = AdsSyncWriteReq(pAddr, 0xF030, 0x3E800, sizeof(axis1), &(axis1));
+    nErr = AdsSyncWriteReq(pAddr, 0xF030, 0x5F820, sizeof(axis1), &(axis1[0]));
     if (nErr) printf("Error: Ads: Write struct: %d\n", nErr);
-
+    nErr = AdsSyncReadReq(pAddr,0xF020,0x5F840,sizeof(axis2), &(axis2[0]) );
+    if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
+    std::cout << axis2[0].stateW << axis2[1].stateW <<'\n';
     std::cin.get();
 
     nErr = AdsPortClose();
