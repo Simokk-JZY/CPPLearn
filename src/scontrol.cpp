@@ -15,14 +15,10 @@
 #include <cstdint>
 
 //构造函数定义，参数引用并绑定到对象中
-Sctrl::Sctrl(const std::string& objname,doubleaxis_ctrl& data1,doubleaxis_state& data2):
+Sctrl::Sctrl(const std::string& objname,doubleaxis_ctrl* ptr1,doubleaxis_state* ptr2):
 name(objname),
-ctrl(data1.control),
-mode(data1.mod),
-pos(data1.position),
-v(data1.velocity),
-max_v(data1.max_speed),
-stateW(data2.state){
+ctrl_ptr(ptr1),
+state_ptr(ptr2){
     std::cout<<"已创建"<<name<<std::endl;
 }
 
@@ -115,9 +111,8 @@ void Sctrl::motion_pp(int target_pos) {
 }
 
 void Sctrl::Sconfirm() {
-    ctrl = control[3];
-    std::cout << std::bitset<16>(stateW) << '\n';
-    Sleep(200);
+    mode =2;
+    ctrl =control[4];
 }
 
 void Sctrl::Sspin() {
@@ -130,19 +125,18 @@ void Sctrl::Sspin() {
     std::cout << std::bitset<16>(stateW) << '\n';
 }
 
-void Sctrl::transmit(doubleaxis_ctrl& data1,doubleaxis_state& data2) {
+void Sctrl::transmit(doubleaxis_ctrl* data1, doubleaxis_state* data2) {
     while (true) {
         //写入参数
-        nErr = AdsSyncWriteReq(pAddr, 0xF030, 0x3E800, sizeof(data1), &(data1));
-        if (nErr) printf("Error: Ads: Write struct: %d\n", nErr);
+        nErr = AdsSyncWriteReq(pAddr, 0xF030, 0x3E800, sizeof(doubleaxis_ctrl), &(data1));
+        if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         //读取状态
-        nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,sizeof(data2), &(data2) );
+        nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,sizeof(doubleaxis_state), &(data2) );
         if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
         // std::cout << std::bitset<16>(data2.state) << '\n';
         // std::cout << std::bitset<16>(data2.state) << '\n';
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
     }
 }

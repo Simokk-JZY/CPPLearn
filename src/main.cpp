@@ -9,6 +9,7 @@
 #include "Scontrol.h"//伺服控制声明
 #include <thread>//多线程声明
 #include <cstdint>
+#include <functional>
 
 // void threadaxis() {
 //     Sctrl Axis1("轴1",axisctrl[1],axisstate[1]);//定义对象
@@ -25,9 +26,9 @@
 int main() {
     // std::thread t1(threadaxis);
     // t1.detach();
-    Sctrl Axis1("轴1",axisctrl[1],axisstate[1]);//定义对象
+    Sctrl Axis1("轴1",&axisctrl[1],&axisstate[1]);//定义对象
 
-    std::thread t1(Sctrl::transmit);
+    std::thread t1(&Sctrl::transmit,axisctrl,axisstate);//开启线程
     t1.detach();
 
 

@@ -23,12 +23,14 @@ struct doubleaxis_ctrl {
     int32_t position;
     unsigned int velocity;
     unsigned int max_speed;
-}axisctrl[2];
+};
 
 struct doubleaxis_state {
     unsigned short state;
-}axisstate[2];
+};
 
+inline doubleaxis_ctrl axisctrl[2];
+inline doubleaxis_state axisstate[2];
 
 class Sctrl{
 private:
@@ -36,6 +38,8 @@ private:
     inline static AmsAddr Addr{};
     inline static PAmsAddr pAddr = &Addr;//指针
 
+    doubleaxis_ctrl* ctrl_ptr;
+    doubleaxis_state* state_ptr;
 
     unsigned short control[5] = {0,6,7,15,31} ;//控制字输入值
     std::string name;
@@ -55,9 +59,9 @@ public:
 
     static void ADS();
     static void ADSoff();
-    static void transmit(doubleaxis_ctrl&,doubleaxis_state&);
+    static void transmit(doubleaxis_ctrl* data1, doubleaxis_state* data2);
 
-    Sctrl(const std::string&,doubleaxis_ctrl&,doubleaxis_state&);
+    Sctrl(const std::string&,doubleaxis_ctrl*,doubleaxis_state*);
     ~Sctrl();
 
     void enable();
