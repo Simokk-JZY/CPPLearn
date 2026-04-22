@@ -4,16 +4,19 @@
 
 #include "stdafx.h"
 
-struct Ads {
-    unsigned short control;
-    unsigned char mode;
-    int32_t position;
+static struct Ads {
+    unsigned short controlword;
+    unsigned char ModeOfOperation;
+    int32_t Targetposition;
     unsigned int velocity;
-    unsigned int max_speed;
+    unsigned int maxspeed;
 }axis1[2];
 
-struct Ads2 {
-    unsigned short stateW;
+static struct Ads2 {
+    unsigned short stateword;
+    unsigned short ErrorCode;
+    int32_t Actualpos;
+    int32_t Actualvel;
 }axis2[2];
 
 int main()
@@ -27,7 +30,7 @@ int main()
 
     std::cout << sizeof(axis1) << "\n";
     std::cout << sizeof(axis2) << "\n";
-    std::cout << axis2[0].stateW <<'\n'<< axis2[1].stateW <<'\n';
+    std::cout << axis2[0].stateword <<'\n'<< axis2[1].stateword <<'\n';
     std::cin.get();
 
     long  nErr{}, nPort{};
@@ -41,17 +44,25 @@ int main()
 
     // TwinCAT 3 PLC1 = 851
     pAddr->port = 851;
-    std::cout << "端口已连接" << '\n';
+    std::cout << "port connected" << '\n';
 
-    nErr = AdsSyncWriteReq(pAddr, 0xF030, 0x5F820, sizeof(axis1), &(axis1[0]));
+    nErr = AdsSyncWriteReq(pAddr, 0xF030, 0x3E800, sizeof(axis1), &(axis1[0]));
     if (nErr) printf("Error: Ads: Write struct: %d\n", nErr);
-    nErr = AdsSyncReadReq(pAddr,0xF020,0x5F840,sizeof(axis2), &(axis2[0]) );
+    nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,sizeof(axis2), &(axis2[0]) );
     if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
-    std::cout << axis2[0].stateW << axis2[1].stateW <<'\n';
+    std::cout << axis2[0].stateword << ", "<<axis2[1].stateword <<'\n';
+
+    for ( int i = 0; i < 2; i++ ) {
+        std::cout << axis2[i].stateword <<'\n';
+        std::cout << axis2[i].ErrorCode <<'\n';
+        std::cout << axis2[i].Actualpos <<'\n';
+        std::cout << axis2[i].Actualvel <<'\n';
+    }
+
     std::cin.get();
 
     nErr = AdsPortClose();
     if (nErr) std::cerr << "Error: AdsPortClose: " << nErr << '\n';
-    std::cout << "端口已关闭" << '\n';
+    std::cout << "port closed" << '\n';
 
 }

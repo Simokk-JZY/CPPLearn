@@ -26,12 +26,11 @@
 int main() {
     // std::thread t1(threadaxis);
     // t1.detach();
-    Sctrl Axis1("轴1",&axisctrl[1],&axisstate[1]);//定义对象
+    Sctrl Axis1;//定义对象
 
-    std::thread t1(&Sctrl::transmit,axisctrl,axisstate);//开启线程
-    t1.detach();
-
-
+    Axis1.enable(0);
+    Sleep(1000);
+    Axis1.disable(0);
 
 
     return 0;

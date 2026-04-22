@@ -17,20 +17,20 @@
 #include <string>
 
 
-struct doubleaxis_ctrl {
+typedef struct _ctrl {
     unsigned short control;
-    unsigned char mod=1;
+    unsigned char mod;
     int32_t position;
     unsigned int velocity;
     unsigned int max_speed;
-};
+} command, *Pcommand;
 
-struct doubleaxis_state {
+typedef struct _state {
     unsigned short state;
-};
+} state,*Pstate;
 
-inline doubleaxis_ctrl axisctrl[2];
-inline doubleaxis_state axisstate[2];
+// inline doubleaxis_ctrl axisctrl[2];
+// inline doubleaxis_state axisstate[2];
 
 class Sctrl{
 private:
@@ -38,37 +38,41 @@ private:
     inline static AmsAddr Addr{};
     inline static PAmsAddr pAddr = &Addr;//指针
 
-    doubleaxis_ctrl* ctrl_ptr;
-    doubleaxis_state* state_ptr;
+    inline static command axis_command[2];
+    inline static state axis_state[2];
 
-    unsigned short control[5] = {0,6,7,15,31} ;//控制字输入值
+    // unsigned short control[5] = {0,6,7,15,31} ;//控制字输入值
     std::string name;
-    unsigned short ctrl = 0 ;
-    unsigned char mode = 1;//pp模式输入值
-    int32_t pos = 0;//闲值
-    unsigned int v=0 ; //速度
-    unsigned int max_v = 0 ;//最大速度
-    unsigned short stateW ;//状态字读取值
-    unsigned int a1=0  ;//加速度
-    unsigned int a2 = 0  ;//减速度
-    bool condition;
+    // unsigned short ctrl = 0 ;
+    // unsigned char mode = 1;//pp模式输入值
+    // int32_t pos = 0;//闲值
+    // unsigned int v=0 ; //速度
+    // unsigned int max_v = 0 ;//最大速度
+    // unsigned short stateW ;//状态字读取值
+    // unsigned int a1=0  ;//加速度
+    // unsigned int a2 = 0  ;//减速度
+    // bool condition;
 
 
 public:
 
 
-    static void ADS();
-    static void ADSoff();
-    static void transmit(doubleaxis_ctrl* data1, doubleaxis_state* data2);
+    void ADS();
+    void ADSoff();
+    void transmit();
 
-    Sctrl(const std::string&,doubleaxis_ctrl*,doubleaxis_state*);
+    Sctrl();
     ~Sctrl();
 
-    void enable();
-    void disable();
-    void motion_pp(int);
-    void Sspin();
-    void Sconfirm();
+    void setsingleaxis(int axis,
+                        unsigned short control,
+                        unsigned char mod,
+                        int32_t position,
+                        unsigned int velocity,
+                        unsigned int max_speed);
+    void enable(int AXIS);
+    void disable(int AXIS);
+    void motion_pp(int AXIS,int target_pos,int profile_velocity);
 
 };
 

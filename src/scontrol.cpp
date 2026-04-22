@@ -13,17 +13,20 @@
 #include "Scontrol.h"//伺服控制声明
 #include <thread>//多线程声明
 #include <cstdint>
+#include "axis_config.h"
 
 //构造函数定义，参数引用并绑定到对象中
-Sctrl::Sctrl(const std::string& objname,doubleaxis_ctrl* ptr1,doubleaxis_state* ptr2):
-name(objname),
-ctrl_ptr(ptr1),
-state_ptr(ptr2){
-    std::cout<<"已创建"<<name<<std::endl;
+Sctrl::Sctrl(){
+    ADS();
+    std::cout<<"module builded"<<std::endl;
+    std::thread t(&Sctrl::transmit,this);
+    t.detach();
+    std::cout<<"thread created"<<std::endl;
 }
 
 Sctrl::~Sctrl() {
-    std::cout<<"对象"<<name<<"已销毁"<<std::endl;
+    ADSoff();
+    std::cout<<"target distroyed"<<std::endl;
 }
 
 void Sctrl::ADS() {
@@ -34,106 +37,61 @@ void Sctrl::ADS() {
 
     // TwinCAT 3 PLC1 = 851
     pAddr->port = 851;
-    std::cout << "端口已连接" << '\n';
+    std::cout << "port connected" << '\n';
+
 }
 
 void Sctrl::ADSoff() {
     nErr = AdsPortClose();
     if (nErr) std::cerr << "Error: AdsPortClose: " << nErr << '\n';
-    std::cout << "端口已关闭" << '\n';
+    std::cout << "port disconnected" << '\n';
 }
 
+void Sctrl::setsingleaxis(int axis, unsigned short Control, unsigned char Mode, int32_t Position, unsigned int Velocity, unsigned int Max_speed) {
+    axis_command[axis].control = Control;
+    axis_command[axis].mod = Mode;
+    axis_command[axis].position = Position;
+    axis_command[axis].velocity = Velocity;
+    axis_command[axis].max_speed = Max_speed;
+}
 
-void Sctrl::enable() {
-    for (int i=1 ;i < 4; i++ )
+void Sctrl::enable(int AXIS) {
+    for (int i=0 ;i < 3; i++ )
     {
-        //将数值写入寄存器
-        ctrl = control[i];
-        Sleep(10);
+
+        setsingleaxis(AXIS,controlWORDbit[i],PPmod,0,0,0);
 
         //从寄存器读取数值
-        std::cout << std::bitset<16>(stateW) << '\n';
+        std::cout << std::bitset<16>(axis_state[AXIS].state) << '\n';
         Sleep(50);
     }
-    std::cout << "已完成上使能" << '\n';
+    std::cout << "Operation Enabled" << '\n';
 }
-void Sctrl::disable() {
-    // do {
-    //     Sleep(500);
-    //     nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW );
-    //     if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
-    //     condition = (stateW & 1024) == 0;
-    // }while(condition);
-    // std::cout << "转动完成" << '\n';
+void Sctrl::disable(int AXIS) {
 
-    // for (int i=2 ; i>-1 ; i-- )
-    // {
-    //     // std::cin >> control1;
-    //     nErr = AdsSyncWriteReq(pAddr,0xF030,0x3E800,0x2, &(control1[i]) );
-    //     if (nErr) std::cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
-    //     // std::cout << "Error: AdsSyncWriteReq: " << nErr << '\n'；
-    //     nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,0x2, &stateW);
-    //     if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
-    //     std::cout << std::bitset<16>(stateW) << '\n';
-    //     Sleep(50);
-    // }
-    // std::cout << "使能结束" << '\n';
+    setsingleaxis(AXIS,DISABLED,PPmod,0,0,0);
+    std::cout << "Operation disabled" << '\n';
 }
 
-void Sctrl::motion_pp(int target_pos) {
-    pos = target_pos;
-
-    std::cout << std::bitset<16>(stateW) << '\n';
-    Sleep(50);
-    std::cout << "设置为pp模式" << '\n';
-     //设置点动位置
-    std::cout << std::bitset<16>(stateW) << '\n';
-    Sleep(200);
-
-    //设置加速度
-    std::cout << std::bitset<16>(stateW) << '\n';
-    Sleep(200);
-
-    //设置减速度
-    std::cout << std::bitset<16>(stateW) << '\n';
-    Sleep(200);
-
-    //设置速度
-    std::cout << std::bitset<16>(stateW) << '\n';
-    Sleep(200);
-
-    //设置最大速度
-
-    std::cout << std::bitset<16>(stateW) << '\n';
-    Sleep(200);
-
-    std::cout << "已完成速度及位置设定" << '\n';
+void Sctrl::motion_pp(int AXIS,int target_pos,int profile_velocity) {
+    setsingleaxis(AXIS,ENABLED,PPmod,target_pos,profile_velocity,Maxvelocity);
+    Sleep(100);
+    std::cout << "move starting" << '\n';
+    setsingleaxis(AXIS,MOVESTART,PPmod,target_pos,profile_velocity,Maxvelocity);
+    Sleep(100);
+    setsingleaxis(AXIS,ENABLED,PPmod,target_pos,profile_velocity,Maxvelocity);
 }
 
-void Sctrl::Sconfirm() {
-    mode =2;
-    ctrl =control[4];
-}
 
-void Sctrl::Sspin() {
-    ctrl = control[4];
-    std::cout << std::bitset<16>(stateW) << '\n';
-    std::cout << "开始转动" << '\n';
-    Sleep(2000);
-
-    ctrl = control[3];
-    std::cout << std::bitset<16>(stateW) << '\n';
-}
-
-void Sctrl::transmit(doubleaxis_ctrl* data1, doubleaxis_state* data2) {
+void Sctrl::transmit() {
     while (true) {
         //写入参数
-        nErr = AdsSyncWriteReq(pAddr, 0xF030, 0x3E800, sizeof(doubleaxis_ctrl), &(data1));
+        nErr = AdsSyncWriteReq(pAddr, indexgroup1, indexoffset1, sizeof(axis_command), &(axis_command));
         if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         //读取状态
-        nErr = AdsSyncReadReq(pAddr,0xF020,0x1F400,sizeof(doubleaxis_state), &(data2) );
+        nErr = AdsSyncReadReq(pAddr,indexgroup2,indexoffset2,sizeof(axis_state), &(axis_state) );
         if (nErr) std::cerr << "Error: AdsSyncReadReq: " << nErr << '\n';
         // std::cout << std::bitset<16>(data2.state) << '\n';
         // std::cout << std::bitset<16>(data2.state) << '\n';
